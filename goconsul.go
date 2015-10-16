@@ -12,6 +12,8 @@ var (
 	port   string
 )
 
+// Consul represents service data for
+// registration with the Consul agent.
 type Consul struct {
 	Name string
 }
@@ -28,11 +30,11 @@ func init() {
 func RegisterService() (err error) {
 	// Open goconsul configuration file.
 	config, err := os.Open("goconsul.json")
-	defer config.Close()
 
 	if err != nil {
 		return err
 	}
+	defer config.Close()
 
 	// Read configuration file for storage in struct and
 	// forward transmission to consul agent over HTTP API.
