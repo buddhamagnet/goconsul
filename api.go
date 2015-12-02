@@ -19,6 +19,38 @@ func NewClient() *http.Client {
 	return &http.Client{}
 }
 
+// SetData adds a value to the consul key-value store.
+func SetData(key, value string) (err error) {
+	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
+	r, err := http.NewRequest("PUT", endpointStore, bytes.NewBufferString(string(value)))
+	if err != nil {
+		return err
+	}
+	log.Printf("adding data for key %s for %s\n", key, consul.Name)
+	client = NewClient()
+	_, err = client.Do(r)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// GetData retrieves a value from the consul key-value store.
+func GetData(key string) (value string, err error) {
+	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
+	r, err := http.NewRequest("GET", endpointStore, nil)
+	if err != nil {
+		return "", err
+	}
+	log.Printf("retrieving data for key %s for %s\n", key, consul.Name)
+	client = NewClient()
+	_, err = client.Do(r)
+	if err != nil {
+		return "", err
+	}
+	return value, nil
+}
+
 // doRegistration registers a service
 // with the local consul agent.
 func doRegistration(data []byte) (err error) {
