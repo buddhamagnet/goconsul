@@ -2,7 +2,9 @@ package goconsul
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -13,6 +15,10 @@ var (
 	client           *http.Client
 )
 
+type KV struct {
+	Value []byte `json:"value"`
+}
+
 // NewClient returns a client struct with
 // a preset timeout.
 func NewClient() *http.Client {
@@ -20,9 +26,9 @@ func NewClient() *http.Client {
 }
 
 // SetData adds a value to the consul key-value store.
-func SetData(key, value string) (err error) {
+func SetData(key string, value []byte) (err error) {
 	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
-	r, err := http.NewRequest("PUT", endpointStore, bytes.NewBufferString(string(value)))
+	r, err := http.NewRequest("PUT", endpointStore, bytes.NewBuffer(value))
 	if err != nil {
 		return err
 	}
@@ -36,7 +42,8 @@ func SetData(key, value string) (err error) {
 }
 
 // GetData retrieves a value from the consul key-value store.
-func GetData(key string) (value string, err error) {
+func GetData(key string) (string, error) {
+	var vals []KV
 	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
 	r, err := http.NewRequest("GET", endpointStore, nil)
 	if err != nil {
@@ -44,11 +51,21 @@ func GetData(key string) (value string, err error) {
 	}
 	log.Printf("retrieving data for key %s for %s\n", key, consul.Name)
 	client = NewClient()
+<<<<<<< HEAD
 	_, err = client.Do(r)
 	if err != nil {
 		return "", err
 	}
 	return value, nil
+=======
+	res, err := client.Do(r)
+	if err != nil {
+		return "", err
+	}
+	data, err := ioutil.ReadAll(res.Body)
+	json.Unmarshal(data, &vals)
+	return string(vals[0].Value), nil
+>>>>>>> ece8ee509c8469b7c57ff7ed3cbd9158150b179a
 }
 
 // doRegistration registers a service
