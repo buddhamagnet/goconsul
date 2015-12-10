@@ -51,13 +51,6 @@ func GetData(key string) (string, error) {
 	}
 	log.Printf("retrieving data for key %s for %s\n", key, consul.Name)
 	client = NewClient()
-<<<<<<< HEAD
-	_, err = client.Do(r)
-	if err != nil {
-		return "", err
-	}
-	return value, nil
-=======
 	res, err := client.Do(r)
 	if err != nil {
 		return "", err
@@ -65,7 +58,6 @@ func GetData(key string) (string, error) {
 	data, err := ioutil.ReadAll(res.Body)
 	json.Unmarshal(data, &vals)
 	return string(vals[0].Value), nil
->>>>>>> ece8ee509c8469b7c57ff7ed3cbd9158150b179a
 }
 
 // doRegistration registers a service
