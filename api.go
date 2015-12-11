@@ -46,6 +46,16 @@ func GetData(key string) ([]byte, error) {
 	return pair.Value, nil
 }
 
+// GetData retrieves a value from the consul key-value store.
+func GetValue(key string) (string, error) {
+	kv := consulClient.KV()
+	pair, _, err := kv.Get(key, nil)
+	if err != nil {
+		return "", err
+	}
+	return string(pair.Value), nil
+}
+
 // doRegistration registers a service
 // with the local consul agent.
 func doRegistration(data []byte) (err error) {
