@@ -57,7 +57,10 @@ func GetData(key string) (string, error) {
 	}
 	data, err := ioutil.ReadAll(res.Body)
 	json.Unmarshal(data, &vals)
-	return string(vals[0].Value), nil
+	if len(vals) > 0 {
+		return string(vals[0].Value), nil
+	}
+	return "", fmt.Errorf("key %s not found", key)
 }
 
 // doRegistration registers a service
