@@ -2,39 +2,33 @@ package goconsul
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/hashicorp/consul/api"
 )
 
 var (
 	endpointRegister string
 	endpointQuery    string
-	client           *http.Client
+	consulClient     *api.Client
+	webClient        *http.Client
 )
 
 type KV struct {
 	Value []byte `json:"value"`
 }
 
-// NewClient returns a client struct with
-// a preset timeout.
-func NewClient() *http.Client {
-	return &http.Client{}
+func init() {
+	consulClient, _ = api.NewClient(api.DefaultConfig())
+	webClient = new(http.Client)
 }
 
 // SetData adds a value to the consul key-value store.
 func SetData(key string, value []byte) (err error) {
-	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
-	r, err := http.NewRequest("PUT", endpointStore, bytes.NewBuffer(value))
-	if err != nil {
-		return err
-	}
-	log.Printf("adding data for key %s for %s\n", key, consul.Name)
-	client = NewClient()
-	_, err = client.Do(r)
+	kv := consulClient.KV()
+	_, err = kv.Put(&api.KVPair{Key: key, Value: value}, nil)
 	if err != nil {
 		return err
 	}
@@ -42,25 +36,14 @@ func SetData(key string, value []byte) (err error) {
 }
 
 // GetData retrieves a value from the consul key-value store.
-func GetData(key string) (string, error) {
-	var vals []KV
-	endpointStore := fmt.Sprintf("http://localhost:%s/v1/kv/%s", port, key)
-	r, err := http.NewRequest("GET", endpointStore, nil)
+func GetData(key string) ([]byte, error) {
+	var data []byte
+	kv := consulClient.KV()
+	pair, _, err := kv.Get(key, nil)
 	if err != nil {
-		return "", err
+		return data, err
 	}
-	log.Printf("retrieving data for key %s for %s\n", key, consul.Name)
-	client = NewClient()
-	res, err := client.Do(r)
-	if err != nil {
-		return "", err
-	}
-	data, err := ioutil.ReadAll(res.Body)
-	json.Unmarshal(data, &vals)
-	if len(vals) > 0 {
-		return string(vals[0].Value), nil
-	}
-	return "", fmt.Errorf("key %s not found", key)
+	return pair.Value, nil
 }
 
 // doRegistration registers a service
@@ -76,8 +59,7 @@ func doRegistration(data []byte) (err error) {
 
 	log.Printf("sending service registration request for %s\n", consul.Name)
 
-	client = NewClient()
-	_, err = client.Do(r)
+	_, err = webClient.Do(r)
 
 	if err != nil {
 		return err
@@ -93,8 +75,7 @@ func queryService() (resp *http.Response, err error) {
 	if err != nil {
 		return nil, err
 	}
-	client = NewClient()
-	resp, err = client.Do(req)
+	resp, err = webClient.Do(req)
 
 	if err != nil {
 		return nil, err
