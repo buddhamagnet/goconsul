@@ -1,3 +1,9 @@
 [submodule "vendor/github.com/hashicorp/consul"]
 	path = vendor/github.com/hashicorp/consul
 	url = https://github.com/hashicorp/consul
+[submodule "vendor/github.com/hashicorp/go-cleanhttp"]
+	path = vendor/github.com/hashicorp/go-cleanhttp
+	url = https://github.com/hashicorp/go-cleanhttp
+[submodule "vendor/github.com/hashicorp/serf"]
+	path = vendor/github.com/hashicorp/serf
+	url = https://github.com/hashicorp/serf
